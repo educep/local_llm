@@ -43,34 +43,21 @@ venv:  ## Create the virtual environment (pins Python 3.11)
 	@echo "            or  source $(VENV_NAME)/bin/activate   (Linux/macOS)"
 
 .PHONY: install
-install:  ## Install project + dev deps in editable mode
-ifeq ($(OS_NAME),Windows)
-	uv pip install --python $(VENV_PYTHON) pip --upgrade --link-mode=copy
-	uv pip install --python $(VENV_PYTHON) -e ".[dev]" --link-mode=copy
-else
-	@if [ ! -x "$(VENV_PYTHON)" ]; then \
-		echo "❌ venv not found at $(VENV_PYTHON). Run 'make venv' first."; exit 1; \
-	fi
-	uv pip install --python $(VENV_PYTHON) pip --upgrade
-	uv pip install --python $(VENV_PYTHON) -e ".[dev]"
-endif
+install:  ## Install project + dev deps (respects [tool.uv.sources], so torch comes from CUDA index)
+	uv sync --extra dev
 	@echo "Dependencies installed (editable)."
 
 .PHONY: install_airllm
-install_airllm:  ## Install the AirLLM backend extra
-ifeq ($(OS_NAME),Windows)
-	uv pip install --python $(VENV_PYTHON) -e ".[airllm]" --link-mode=copy
-else
-	uv pip install --python $(VENV_PYTHON) -e ".[airllm]"
-endif
+install_airllm:  ## Install dev + AirLLM extra (torch pulled from pytorch-cu124 index)
+	uv sync --extra dev --extra airllm
 
 .PHONY: install_llamacpp
-install_llamacpp:  ## Install the llama.cpp backend extra (CUDA wheels recommended on Windows; see README)
-ifeq ($(OS_NAME),Windows)
-	uv pip install --python $(VENV_PYTHON) -e ".[llamacpp]" --link-mode=copy
-else
-	uv pip install --python $(VENV_PYTHON) -e ".[llamacpp]"
-endif
+install_llamacpp:  ## Install dev + llama.cpp extra (CUDA wheels — see README if source build needed)
+	uv sync --extra dev --extra llamacpp
+
+.PHONY: install_all
+install_all:  ## Install dev + every engine backend
+	uv sync --extra dev --extra airllm --extra llamacpp
 
 .PHONY: activate
 activate:  ## Print the activate command for your shell

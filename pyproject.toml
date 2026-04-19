@@ -56,6 +56,19 @@ run-llamacpp = "local_llm.scripts.run_llamacpp:main"
 run-ollama   = "local_llm.scripts.run_ollama:main"
 bench        = "local_llm.bench.harness:main"
 
+# --- uv: route torch to the CUDA 12.4 index (Windows gotcha) ------------
+# Default PyPI torch wheels on Windows are CPU-only. We pin torch to
+# PyTorch's CUDA index so `make install_airllm` gets a GPU-enabled build.
+# Match the index to your CUDA Toolkit version (`nvcc --version`).
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu124" }
+
 # --- setuptools: src/ layout --------------------------------------------
 
 [tool.setuptools.packages.find]
