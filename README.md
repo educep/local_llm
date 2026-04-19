@@ -7,7 +7,7 @@ Three engines behind one interface:
 - **llama.cpp** — the de facto standard; GGUF quantization, CPU/GPU hybrid.
 - **Ollama** — llama.cpp with better ergonomics.
 
-See [`plans/`](./plans/) for the full plan history and [`learning/`](./learning/) for the running lessons diary.
+See [`learning/`](./learning/) for the running lessons diary.
 
 ## Quickstart
 
