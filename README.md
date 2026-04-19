@@ -11,18 +11,16 @@ Three engines behind one interface:
 ## Quickstart
 
 ```bash
-make install_uv      # once, installs uv
+make install_uv      # once per machine
 make venv            # creates .venv pinned to Python 3.11
-make install         # installs project + dev deps (editable)
+make install_airllm  # or install_llamacpp, install_all
 make pre_commit      # installs git hooks
 make check-all       # lint + typecheck + tests
 ```
 
-Install a backend when you need it:
-```bash
-make install_llamacpp
-make install_airllm
-```
+> **Windows + NVIDIA GPU:** `torch` is pinned to the PyTorch CUDA 12.4 index so the default CPU-only wheel is not picked up. See [`docs/windows-cuda.md`](./docs/windows-cuda.md) for the full rationale and recovery steps.
+
+Full walkthrough: [`docs/setup.md`](./docs/setup.md).
 
 Download and run:
 ```bash
