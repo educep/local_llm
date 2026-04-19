@@ -19,7 +19,9 @@ class OllamaRunner(Runner):
         self._model_id: str = ""
 
     def load(self, model_id: str, **kwargs: Any) -> None:
+        del model_id, kwargs
         raise NotImplementedError("Ollama runner: implement in Phase 3")
 
     def generate(self, prompt: str, max_tokens: int = 256, **kwargs: Any) -> GenerateResult:
+        del prompt, max_tokens, kwargs
         raise NotImplementedError("Ollama runner: implement in Phase 3")

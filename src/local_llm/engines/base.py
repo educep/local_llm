@@ -22,9 +22,9 @@ class GenerateResult:
     text: str
     tokens_in: int
     tokens_out: int
-    ttft_s: float             # time to first token
-    total_s: float            # total wall time including prefill
-    decode_tok_per_s: float   # steady-state decode throughput (tokens_out / (total_s - ttft_s))
+    ttft_s: float  # time to first token
+    total_s: float  # total wall time including prefill
+    decode_tok_per_s: float  # steady-state decode throughput (tokens_out / (total_s - ttft_s))
     peak_vram_mb: float | None = None
     peak_ram_mb: float | None = None
     engine: str = ""
@@ -49,5 +49,5 @@ class Runner(ABC):
     def generate(self, prompt: str, max_tokens: int = 256, **kwargs: Any) -> GenerateResult:
         """Run one generation. Must populate all non-optional GenerateResult fields."""
 
-    def unload(self) -> None:
+    def unload(self) -> None:  # noqa: B027 — intentional default no-op; subclasses override as needed
         """Release model resources. Default no-op; override when needed."""

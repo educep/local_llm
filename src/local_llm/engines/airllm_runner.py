@@ -20,7 +20,9 @@ class AirLLMRunner(Runner):
         self._model_id: str = ""
 
     def load(self, model_id: str, **kwargs: Any) -> None:
+        del model_id, kwargs  # used by the Phase 1 implementation
         raise NotImplementedError("AirLLM runner: implement in Phase 1")
 
     def generate(self, prompt: str, max_tokens: int = 256, **kwargs: Any) -> GenerateResult:
+        del prompt, max_tokens, kwargs
         raise NotImplementedError("AirLLM runner: implement in Phase 1")

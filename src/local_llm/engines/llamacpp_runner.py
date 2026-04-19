@@ -21,7 +21,9 @@ class LlamaCppRunner(Runner):
         self._model_path: str = ""
 
     def load(self, model_id: str, **kwargs: Any) -> None:
+        del model_id, kwargs
         raise NotImplementedError("llama.cpp runner: implement in Phase 2")
 
     def generate(self, prompt: str, max_tokens: int = 256, **kwargs: Any) -> GenerateResult:
+        del prompt, max_tokens, kwargs
         raise NotImplementedError("llama.cpp runner: implement in Phase 2")

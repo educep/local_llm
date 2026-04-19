@@ -84,51 +84,51 @@ endif
 
 .PHONY: pre_commit
 pre_commit:  ## Install pre-commit git hooks
-	pre-commit install
+	uv run pre-commit install
 	@echo "Pre-commit hooks installed."
 
 .PHONY: pre-commit-run
 pre-commit-run:  ## Run all pre-commit hooks on all files
-	pre-commit run --all-files
+	uv run pre-commit run --all-files
 
 .PHONY: pre-commit-run-staged
 pre-commit-run-staged:  ## Run pre-commit hooks on staged files only
-	pre-commit run
+	uv run pre-commit run
 
 # --- individual quality gates (all wrap pre-commit) ----------------------
 
 .PHONY: format
 format:  ## Format + auto-fix with ruff (replaces black + isort + pyupgrade)
-	pre-commit run ruff --all-files || true
-	pre-commit run ruff-format --all-files
+	uv run pre-commit run ruff --all-files || true
+	uv run pre-commit run ruff-format --all-files
 
 .PHONY: ruff
 ruff:  ## ruff lint check (no fixes)
-	pre-commit run ruff --all-files
+	uv run pre-commit run ruff --all-files
 
 .PHONY: mypy
 mypy:  ## mypy type check
-	pre-commit run mypy --all-files
+	uv run pre-commit run mypy --all-files
 
 .PHONY: bandit
 bandit:  ## bandit security check
-	pre-commit run bandit --all-files
+	uv run pre-commit run bandit --all-files
 
 .PHONY: vulture
 vulture:  ## vulture dead-code check
-	pre-commit run vulture --all-files
+	uv run pre-commit run vulture --all-files
 
 .PHONY: codespell
 codespell:  ## codespell typo check
-	pre-commit run codespell --all-files
+	uv run pre-commit run codespell --all-files
 
 .PHONY: lint
 lint: ruff mypy bandit vulture codespell  ## Run every linter
 	@echo "All linting checks completed."
 
 .PHONY: test
-test:  ## Run pytest (via pre-commit so CI and local match)
-	pre-commit run pytest --all-files
+test:  ## Run pytest (via pre-commit manual stage)
+	uv run pre-commit run pytest --all-files --hook-stage manual
 
 .PHONY: check-all
 check-all: lint test  ## Run every linter + tests

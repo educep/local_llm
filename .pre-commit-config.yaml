@@ -61,7 +61,11 @@ repos:
     rev: v2.13
     hooks:
       - id: vulture
-        args: ["src", "--min-confidence=80"]
+        args:
+          - "src"
+          - "--min-confidence=80"
+          - "--ignore-decorators=@abstractmethod,@pytest.fixture,@app.route"
+          - "--ignore-names=kwargs,args,cls,self"
 
   # --- codespell (typos) ----------------------------------------------
   - repo: https://github.com/codespell-project/codespell
