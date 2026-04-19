@@ -39,3 +39,11 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# AI assistant artifacts (kept local, not versioned)
+CLAUDE.md
+.claude/
+.cursor/
+.cursorrules
+.aider*
+.github/copilot-*
