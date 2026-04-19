@@ -1,0 +1,83 @@
+# Pre-commit is the single source of truth for running linters/formatters/tests.
+# All tool config lives in pyproject.toml (ruff, mypy, bandit, vulture, codespell).
+#
+# Usage:
+#   make pre_commit              install git hooks
+#   make pre-commit-run          run all hooks on all files
+#   make pre-commit-run-staged   run hooks on staged files only
+
+default_language_version:
+  python: python3.11
+
+exclude: "^(\\.venv|venv|build|dist|models|notebooks|references|data|bench/results)/"
+
+repos:
+  # --- ruff: replaces black + isort + flake8 (+plugins) + pyupgrade ----
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+      - id: ruff-format
+
+  # --- housekeeping hooks ---------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-ast
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+
+  # --- mypy (types) ---------------------------------------------------
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      - id: mypy
+        args: ["--config-file", "pyproject.toml"]
+        additional_dependencies:
+          - pydantic>=2.7
+          - types-psutil
+        files: ^(src|tests)/
+
+  # --- bandit (security) ----------------------------------------------
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      - id: bandit
+        args: ["-c", "pyproject.toml"]
+        additional_dependencies: ["bandit[toml]"]
+        files: ^src/
+
+  # --- vulture (dead code) --------------------------------------------
+  - repo: https://github.com/jendrikseipp/vulture
+    rev: v2.13
+    hooks:
+      - id: vulture
+        args: ["src", "--min-confidence=80"]
+
+  # --- codespell (typos) ----------------------------------------------
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+        additional_dependencies: ["tomli"]
+
+  # --- pytest (local hook; runs the real test suite) ------------------
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [manual, pre-push]
+        args: ["-q", "tests/"]

@@ -1,0 +1,184 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "local-llm"
+version = "0.1.0"
+description = "Benchmark lab for local LLM inference engines (AirLLM, llama.cpp, Ollama) on modest hardware."
+readme = "README.md"
+authors = [{ name = "eduardo" }]
+license = { text = "MIT" }
+requires-python = ">=3.11,<3.12"
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "httpx>=0.27",
+    "huggingface-hub>=0.24",
+    "pydantic>=2.7",
+    "rich>=13.7",
+    "typer>=0.12",
+    "psutil>=5.9",
+    "nvidia-ml-py>=12.0",
+]
+
+# --- Optional engine backends (install only what you use) ----------------
+
+[project.optional-dependencies]
+airllm = [
+    "airllm>=2.11",
+    "torch>=2.3",
+    "transformers>=4.43",
+    "accelerate>=0.33",
+    "safetensors>=0.4",
+]
+llamacpp = [
+    "llama-cpp-python>=0.2.90",
+]
+ollama = []  # HTTP only; uses base httpx
+
+dev = [
+    "ruff>=0.6",
+    "mypy>=1.10",
+    "bandit>=1.7",
+    "vulture>=2.14",
+    "codespell>=2.3",
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "pre-commit>=3.7",
+    "types-psutil",
+]
+
+[project.scripts]
+run-airllm   = "local_llm.scripts.run_airllm:main"
+run-llamacpp = "local_llm.scripts.run_llamacpp:main"
+run-ollama   = "local_llm.scripts.run_ollama:main"
+bench        = "local_llm.bench.harness:main"
+
+# --- setuptools: src/ layout --------------------------------------------
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["local_llm*"]
+
+# --- ruff: replaces black + isort + flake8 (+plugins) + pyupgrade -------
+# Single source of truth for style/lint/format. `ruff check` lints, `ruff format` formats.
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+extend-exclude = [".venv", "venv", "models", "bench/results", "notebooks", "references", "data"]
+
+[tool.ruff.lint]
+# Rule families: https://docs.astral.sh/ruff/rules/
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes (unused imports/vars)
+    "I",   # isort (import ordering)
+    "B",   # flake8-bugbear (likely bugs)
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade (modernize syntax)
+    "N",   # pep8-naming
+    "SIM", # flake8-simplify
+    "RUF", # ruff-specific rules
+    "PL",  # pylint subset
+    "PTH", # prefer pathlib over os.path
+    "S",   # flake8-bandit (security; complements the real bandit tool)
+    "TID", # flake8-tidy-imports
+]
+ignore = [
+    "E501",     # line length (formatter handles most; leave flexible for strings/urls)
+    "PLR0913",  # too many arguments — common in LLM APIs
+    "PLR2004",  # magic numbers — common in tunables (n_gpu_layers, etc.)
+    "S101",     # assert — we use it in tests and runtime invariants
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "PLR2004"]
+"src/local_llm/scripts/**" = ["T201"]  # prints are fine in CLI entrypoints
+
+[tool.ruff.lint.isort]
+known-first-party = ["local_llm"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+# --- mypy (ruff does not do types) --------------------------------------
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+strict_optional = true
+ignore_missing_imports = true
+implicit_reexport = true
+follow_imports = "skip"
+exclude = [
+    "\\.venv/",
+    "venv/",
+    "build/",
+    "dist/",
+    "models/",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "airllm.*",
+    "llama_cpp.*",
+    "transformers.*",
+    "torch.*",
+    "pynvml.*",
+    "nvidia_ml_py.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_decorators = false
+disallow_untyped_defs = false
+warn_return_any = false
+
+# --- bandit (deeper security scan; alongside ruff's S rules) ------------
+
+[tool.bandit]
+skip = ["B101"]  # assert is fine
+exclude_dirs = ["tests", ".venv", "venv", "build", "dist", "models", "notebooks"]
+
+# --- vulture (dead-code finder) -----------------------------------------
+
+[tool.vulture]
+min_confidence = 80
+paths = ["src"]
+exclude = [".venv", "venv", "build", "dist", "models", "notebooks"]
+
+# --- codespell (typo finder) --------------------------------------------
+
+[tool.codespell]
+skip = "*.gguf,*.safetensors,*.bin,*.pt,*.po,*.mo,*.pyc,models,bench/results"
+ignore-words-list = "nd,ans"
+
+# --- pytest -------------------------------------------------------------
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra --strict-markers --strict-config"
+testpaths = ["tests"]
+markers = [
+    "slow: tests that require model downloads or GPU execution",
+    "gpu: tests that require a CUDA GPU",
+]
