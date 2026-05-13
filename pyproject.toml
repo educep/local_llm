@@ -29,9 +29,17 @@ dependencies = [
 airllm = [
     "airllm>=2.11",
     "torch>=2.3",
-    "transformers>=4.43",
+    # airllm 2.11 imports `optimum.bettertransformer`, which was removed in optimum 2.0.
+    "optimum<2.0",
+    # transformers 5.x dropped APIs optimum<2 relies on; cap at 4.x.
+    # optimum.bettertransformer additionally requires transformers<4.49.
+    "transformers>=4.43,<4.49",
     "accelerate>=0.33",
     "safetensors>=0.4",
+    # airllm imports Baichuan tokenizer at package import time.
+    "sentencepiece>=0.2",
+    # Required by airllm for compression='4bit'/'8bit'. Windows wheels since 0.43.
+    "bitsandbytes>=0.43",
 ]
 llamacpp = [
     "llama-cpp-python>=0.2.90",
@@ -111,7 +119,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "PLR2004"]
-"src/local_llm/scripts/**" = ["T201"]  # prints are fine in CLI entrypoints
+"src/local_llm/scripts/**" = ["T201", "PLC0415"]  # prints + lazy engine imports are intentional
 
 [tool.ruff.lint.isort]
 known-first-party = ["local_llm"]

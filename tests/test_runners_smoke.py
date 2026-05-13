@@ -34,8 +34,15 @@ def test_runner_subclass(cls: type[Runner]) -> None:
     assert cls.engine_name != "abstract"
 
 
-@pytest.mark.parametrize("cls", [AirLLMRunner, LlamaCppRunner, OllamaRunner])
+@pytest.mark.parametrize("cls", [LlamaCppRunner, OllamaRunner])
 def test_runner_load_not_implemented(cls: type[Runner]) -> None:
+    """Phase 2/3 runners still raise; AirLLM (Phase 1) is implemented."""
     runner = cls()
     with pytest.raises(NotImplementedError):
         runner.load("dummy")
+
+
+def test_airllm_generate_before_load() -> None:
+    runner = AirLLMRunner()
+    with pytest.raises(RuntimeError, match="before load"):
+        runner.generate("hi")
